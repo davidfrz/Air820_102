@@ -56,6 +56,63 @@ local function testPlayTts(tStr)
 end
 
 
+--播放冲突测试接口，每次打开一个if语句进行测试
+local function testPlayConflict()
+    if true then
+        --循环播放来电铃声
+        audio.play(CALL,"FILE","/lua/call.mp3",7,nil,true)
+        --5秒钟后，循环播放开机铃声
+        sys.timerStart(audio.play,5000,PWRON,"FILE","/lua/pwron.mp3",7,nil,true)        
+    end    
+
+    if false then
+        --循环播放来电铃声
+        audio.play(CALL,"FILE","/lua/call.mp3",audiocore.VOL7,nil,true)
+        --5秒钟后，尝试循环播放新短信铃声，但是优先级不够，不会播放
+        sys.timerStart(audio.play,5000,SMS,"FILE","/lua/sms.mp3",7,nil,true)        
+    end    
+
+    if false then
+        --循环播放TTS
+        audio.play(TTS,"TTS",ttsStr,7,nil,true)
+        --10秒钟后，循环播放开机铃声
+        sys.timerStart(audio.play,10000,PWRON,"FILE","/lua/pwron.mp3",7,nil,true)        
+    end
+
+
+    if false then
+        --循环播放录音
+        audio.play(REC,"RECORD",1,7,nil,true)
+        --5秒钟后，循环播放开机铃声
+        sys.timerStart(audio.play,5000,PWRON,"FILE","/lua/pwron.mp3",7,nil,true)        
+    end   
+end
+
+
+local function tesTtsNew()
+    --设置优先级相同时的播放策略，1表示停止当前播放，播放新的播放请求
+    audio.setStrategy(1)
+    audio.play(TTS,"TTS",ttsStr,7)
+end
+
+--audio.setChannel(1)
+
+--每次打开下面的一种分支进行测试
+
+-- if true then
+--     if string.match(rtos.get_version(),"TTS") then
+--         sys.timerStart(testPlayTts,5000)
+--         --如果要测试tts播放时，请求播放新的tts，打开下面这段代码
+--         --sys.timerLoopStart(tesTtsNew,5000)
+--     else
+--         sys.timerStart(testPlayFile,5000)
+--     end
+-- else
+--     sys.timerStart(testPlayConflict,5000)
+    
+--     --5秒后，开始录音6秒，之后进行播放冲突测试接口
+--     --sys.timerStart(record.start,5000,6,testPlayConflict)
+-- end
 
 function test_01(fStr)
     testPlayTts(fStr)
